@@ -2,18 +2,19 @@ import cv2
 import numpy as np
 from PIL import ImageGrab
 import math
-from pynput.keyboard import Key
-from pynput.keyboard import Controller as keyboardCtrl
+import pyautogui
 from operator import itemgetter
+import time
 imgColor = None
 widthScreen = 1920
 heightScreen = 1080
 resImg = None
 
+
 def getPosition(event, x, y, flags, param):
     global imgColor
     if event == cv2.EVENT_MOUSEMOVE and imgColor is not None:
-        print(x,y,imgColor[y, x])
+        print(x, y, imgColor[y, x])
 
 
 def getColor():
@@ -54,15 +55,14 @@ def findBall(img):
     imgCnts, cnts, _ = cv2.findContours(
         th, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     res = []
-    resImg = img * 0
-    cv2.drawContours(resImg, cnts, -1, (0, 255, 0), 3)
+    # cv2.drawContours(resImg, cnts, -1, (0, 255, 0), 3)
 
     for c in cnts:
         area = cv2.contourArea(c)
         (x, y), r = cv2.minEnclosingCircle(c)
         areaCir = circle_area(r)
         if abs(area - areaCir) <= 40:
-            print(abs(area - areaCir))
+            # print(abs(area - areaCir))
             cv2.circle(resImg, (int(x), int(y)), int(r), (255, 0, 0), -1)
             res.append([x, y, r])
     if len(res) > 0:
@@ -88,8 +88,8 @@ def findPlatform(img):
     imgCnts, cnts, _ = cv2.findContours(
         th, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     res = []
-    resImg = img * 0
-    cv2.drawContours(resImg, cnts, -1, (0, 255, 0), 3)
+
+    # cv2.drawContours(resImg, cnts, -1, (0, 255, 0), 3)
 
     for c in cnts:
         areaCnt = cv2.contourArea(c)
@@ -111,25 +111,47 @@ def findPlatform(img):
     #     exit()
     return x, y
 
+def keyboard(delta):
+    # keyboard = keyboardCtrl()
+    if delta > 25:
+        print('press right')
+        pyautogui.keyDown('right')
+        # keyboard.press(Key.right)
+        # keyboard.release(Key.right)
+    elif delta < -25:
+        print('press left')
+        pyautogui.keyDown('left')
+        # keyboard.press(Key.left)
+        # keyboard.release(Key.left)
+    else:
+        pyautogui.keyUp('left')
+        pyautogui.keyUp('right')
 
 def main():
     global resImg
     xCir, yCir = 0, 0
     xRect, yRect = 0, 0
+    print('wait 5 second')
+    for i in range(0,5):
+        print(i)
+        time.sleep(1)
     while True:
         img = screenshotCapture()
         if img is None:
             continue
+        resImg = img * 0
         xCir, yCir = findBall(img)
         xRect, yRect = findPlatform(img)
-
+        print(xCir,xRect,xCir-xRect)
+        keyboard(xCir-xRect)
         cv2.imshow('resImg', resImg)
         # cv2.imshow('resImgRect', resImg)
         key = cv2.waitKey(1) & 0xff
         if key == ord('q'):
             break
-    
+
     cv2.destroyAllWindows()
+
 
 if __name__ == '__main__':
     main()
