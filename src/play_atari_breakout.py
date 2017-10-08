@@ -8,7 +8,7 @@ from operator import itemgetter
 imgColor = None
 widthScreen = 1920
 heightScreen = 1080
-
+resImg = None
 
 def getPosition(event, x, y, flags, param):
     global imgColor
@@ -44,9 +44,10 @@ def circle_area(radius):
 
 
 def findBall(img):
+    global resImg
     x, y = 0, 0
-    lowerCir = np.array([250, 250, 250], np.uint8)
-    upperCir = np.array([255, 255, 40], np.uint8)
+    lowerCir = np.array([30, 30, 30], np.uint8)
+    upperCir = np.array([40, 40, 40], np.uint8)
 
     imgInRange = cv2.inRange(img, lowerCir, upperCir)
     ret, th = cv2.threshold(imgInRange, 127, 255, 0)
@@ -69,17 +70,18 @@ def findBall(img):
         resSorted = resSorted[-1]
         x = resSorted[0]
         y = resSorted[1]
-    cv2.imshow('resImgCir', resImg)
-    key = cv2.waitKey(1) & 0xff
-    if key == ord('q'):
-        exit()
+    # cv2.imshow('resImgCir', resImg)
+    # key = cv2.waitKey(1) & 0xff
+    # if key == ord('q'):
+    #     exit()
     return x, y
 
 
 def findPlatform(img):
+    global resImg
     x, y = 0, 0
-    lowerRect = np.array([40,  69,  190], np.uint8)
-    upperRect = np.array([50,  70,  200], np.uint8)
+    lowerRect = np.array([250,  130,  0], np.uint8)
+    upperRect = np.array([255,  140,  5], np.uint8)
 
     imgInRange = cv2.inRange(img, lowerRect, upperRect)
     ret, th = cv2.threshold(imgInRange, 127, 255, 0)
@@ -102,10 +104,11 @@ def findPlatform(img):
         resSorted = resSorted[0]
         x = resSorted[1]
         y = resSorted[2]
-    cv2.imshow('resImgRect', resImg)
-    key = cv2.waitKey(1) & 0xff
-    if key == ord('q'):
-        exit()
+    # cv2.imshow('resImgRect', imgInRange)
+    # # cv2.imshow('resImgRect', resImg)
+    # key = cv2.waitKey(1) & 0xff
+    # if key == ord('q'):
+    #     exit()
     return x, y
 
 
@@ -116,10 +119,17 @@ def main():
         img = screenshotCapture()
         if img is None:
             continue
-        # xCir, yCir = findBall(img)
+        xCir, yCir = findBall(img)
         xRect, yRect = findPlatform(img)
 
-
+        cv2.imshow('resImgRect', imgInRange)
+        # cv2.imshow('resImgRect', resImg)
+        key = cv2.waitKey(1) & 0xff
+        if key == ord('q'):
+            break
+    
+    cv2.destroyAllWindows()
+    
 if __name__ == '__main__':
-    # main()
-    getColor()
+    main()
+    # getColor()
