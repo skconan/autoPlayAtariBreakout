@@ -113,6 +113,7 @@ def findPlatform(img):
 
 
 def main():
+    global resImg
     xCir, yCir = 0, 0
     xRect, yRect = 0, 0
     while True:
@@ -122,14 +123,14 @@ def main():
         xCir, yCir = findBall(img)
         xRect, yRect = findPlatform(img)
 
-        cv2.imshow('resImgRect', imgInRange)
+        cv2.imshow('resImg', resImg)
         # cv2.imshow('resImgRect', resImg)
         key = cv2.waitKey(1) & 0xff
         if key == ord('q'):
             break
     
     cv2.destroyAllWindows()
-    
+
 if __name__ == '__main__':
     main()
     # getColor()
