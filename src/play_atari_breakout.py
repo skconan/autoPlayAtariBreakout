@@ -1,14 +1,14 @@
 import cv2
 import numpy as np
-from PIL import ImageGrab
 import math
 import pyautogui
 from operator import itemgetter
 import time
+
 imgColor = None
+resImg = None
 widthScreen = 1920
 heightScreen = 1080
-resImg = None
 
 
 def getPosition(event, x, y, flags, param):
@@ -23,7 +23,6 @@ def getColor():
     cv2.setMouseCallback('image', getPosition)
     while True:
         imgColor = screenshotCapture()
-        # imgColor = cv2.imread('C:/Users/skconan/Desktop/imgCtrlKeyboard/src/images/Screenshot (40).png',1)
         if imgColor is None:
             continue
         cv2.imshow('image', imgColor)
@@ -33,8 +32,8 @@ def getColor():
 
 
 def screenshotCapture():
-    img = ImageGrab.grab(
-        bbox=(int(widthScreen / 2), 240, widthScreen, heightScreen))
+    img = pyautogui.screenshot(
+        region=(int(widthScreen / 2), 240, int(widthScreen / 2), heightScreen - 240))
     img = np.array(img)
 
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -55,14 +54,12 @@ def findBall(img):
     imgCnts, cnts, _ = cv2.findContours(
         th, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     res = []
-    # cv2.drawContours(resImg, cnts, -1, (0, 255, 0), 3)
 
     for c in cnts:
         area = cv2.contourArea(c)
         (x, y), r = cv2.minEnclosingCircle(c)
         areaCir = circle_area(r)
         if abs(area - areaCir) <= 40:
-            # print(abs(area - areaCir))
             cv2.circle(resImg, (int(x), int(y)), int(r), (255, 0, 0), -1)
             res.append([x, y, r])
     if len(res) > 0:
@@ -70,10 +67,7 @@ def findBall(img):
         resSorted = resSorted[-1]
         x = resSorted[0]
         y = resSorted[1]
-    # cv2.imshow('resImgCir', resImg)
-    # key = cv2.waitKey(1) & 0xff
-    # if key == ord('q'):
-    #     exit()
+
     return x, y
 
 
@@ -89,8 +83,6 @@ def findPlatform(img):
         th, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
     res = []
 
-    # cv2.drawContours(resImg, cnts, -1, (0, 255, 0), 3)
-
     for c in cnts:
         areaCnt = cv2.contourArea(c)
         x, y, w, h = cv2.boundingRect(c)
@@ -104,48 +96,50 @@ def findPlatform(img):
         resSorted = resSorted[0]
         x = resSorted[1]
         y = resSorted[2]
-    # cv2.imshow('resImgRect', imgInRange)
-    # # cv2.imshow('resImgRect', resImg)
-    # key = cv2.waitKey(1) & 0xff
-    # if key == ord('q'):
-    #     exit()
-    return x, y
+        w = resSorted[3]
+        h = resSorted[4]
+        cv2.circle(resImg, (int(x + w / 2), int(y + h / 2)),
+                   int(h), (255, 0, 255), -1)
 
-def keyboard(delta):
-    # keyboard = keyboardCtrl()
-    if delta > 25:
+        return int(x + w / 2), int(y + h / 2), x + int(w / 2.5), x + w - int(w / 2.5)
+    return 0, 0, 0, 0
+
+
+def keyboard(xBall, xR, xL):
+    if xBall > xR:
         print('press right')
         pyautogui.keyDown('right')
-        # keyboard.press(Key.right)
-        # keyboard.release(Key.right)
-    elif delta < -25:
+
+    elif xBall < xL:
         print('press left')
         pyautogui.keyDown('left')
-        # keyboard.press(Key.left)
-        # keyboard.release(Key.left)
+
     else:
         pyautogui.keyUp('left')
         pyautogui.keyUp('right')
+
 
 def main():
     global resImg
     xCir, yCir = 0, 0
     xRect, yRect = 0, 0
     print('wait 5 second')
-    for i in range(0,5):
+    for i in range(0, 5):
         print(i)
         time.sleep(1)
+
     while True:
         img = screenshotCapture()
         if img is None:
             continue
         resImg = img * 0
         xCir, yCir = findBall(img)
-        xRect, yRect = findPlatform(img)
-        print(xCir,xRect,xCir-xRect)
-        keyboard(xCir-xRect)
+        xRect, yRect, xL, xR = findPlatform(img)
+        print(xCir, xRect, xCir - xRect)
+        keyboard(xCir, xR, xL)
+        r, c, ch = resImg.shape
+        resImg = cv2.resize(resImg, (int(c / 3), int(r / 3)))
         cv2.imshow('resImg', resImg)
-        # cv2.imshow('resImgRect', resImg)
         key = cv2.waitKey(1) & 0xff
         if key == ord('q'):
             break
@@ -155,4 +149,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # getColor()
