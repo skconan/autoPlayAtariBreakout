@@ -1,7 +1,11 @@
 Libraries
 
-  OpenCV
+    OpenCV
   
-  Numpy
+    Numpy
+      
+      pip install numpy
   
-  AutoPlayGUI
+    AutoPlayGUI
+    
+      installation: http://pyautogui.readthedocs.io/en/latest/install.html
