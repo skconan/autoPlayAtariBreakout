@@ -11,12 +11,27 @@ widthScreen = 1920
 heightScreen = 1080
 
 
+
+
+
+
 def get_position(event, x, y, flags, param):
     global imgColor
     if event == cv2.EVENT_MOUSEMOVE and imgColor is not None:
         print(x, y, imgColor[y, x])
 
-
+def get_color():
+    global imgColor
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image', get_position)
+    while True:
+        imgColor = screenshotCapture()
+        if imgColor is None:
+            continue
+        cv2.imshow('image', imgColor)
+        key = cv2.waitKey(1) & 0xff
+        if key == ord('q'):
+            break
 
 def screenshot_capture():
     img = pyautogui.screenshot(
