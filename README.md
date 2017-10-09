@@ -1,0 +1,4 @@
+Libraries
+  OpenCV
+  Numpy
+  AutoPlayGUI
