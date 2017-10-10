@@ -7,23 +7,21 @@ import time
 
 imgColor = None
 resImg = None
-widthScreen = 1920
-heightScreen = 1080
+width_screen = 1920
+height_screen = 1080
 
 
-
-
-
-
-def get_position(event, x, y, flags, param):
+def mouse_callback(event, x, y, flags, param):
     global imgColor
     if event == cv2.EVENT_MOUSEMOVE and imgColor is not None:
         print(x, y, imgColor[y, x])
+    if event == cv2.EVENT_LBUTTONCLK:
+        print (x*3,y*3)
 
 def get_color():
     global imgColor
     cv2.namedWindow('image')
-    cv2.setMouseCallback('image', get_position)
+    cv2.setMouseCallback('image', mouse_callback)
     while True:
         imgColor = screenshotCapture()
         if imgColor is None:
@@ -35,7 +33,7 @@ def get_color():
 
 def screenshot_capture():
     img = pyautogui.screenshot(
-        region=(int(widthScreen / 2), 240, int(widthScreen / 2), heightScreen - 240))
+        region=(int(width_screen / 2), 240, int(width_screen / 2), height_screen - 240))
     img = np.array(img)
 
     return cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -120,7 +118,18 @@ def keyboard(xBall, xR, xL):
         pyautogui.keyUp('left')
         pyautogui.keyUp('right')
 
-
+def get_position():
+    print('Get region of game screen')   
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image', mouse_callback)
+    img = pyautogui.screenshot()
+    r,c,ch = img.shape
+    img = cv2.resize(img,(int(r/3),int(c/3)))
+    while True:
+        cv2.imshow('image',img)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q'):
+            break
 def main():
     global resImg
     xCir, yCir = 0, 0
@@ -150,4 +159,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    get_position()
